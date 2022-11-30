@@ -2,6 +2,7 @@ package tencent
 
 import (
 	"fmt"
+
 	"github.com/galaxy-future/BridgX/pkg/cloud"
 	"github.com/galaxy-future/BridgX/pkg/utils"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"

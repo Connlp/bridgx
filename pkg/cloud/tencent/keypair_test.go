@@ -1,10 +1,11 @@
 package tencent
 
 import (
-	"github.com/galaxy-future/BridgX/pkg/cloud"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+
+	"github.com/galaxy-future/BridgX/pkg/cloud"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
