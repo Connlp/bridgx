@@ -1,6 +1,7 @@
 package tencent
 
 import (
+	"github.com/alibabacloud-go/tea/tea"
 	"github.com/galaxy-future/BridgX/internal/logs"
 	"github.com/galaxy-future/BridgX/pkg/cloud"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
@@ -116,38 +117,31 @@ func (p *TencentCloud) EnterpriseNamespaceList(region, instanceId string, pageNu
 func (p *TencentCloud) PersonalNamespaceList(region string) ([]cloud.Namespace, error) {
 	var NamespaceList []cloud.Namespace
 	requestROP := tcr.NewDescribeRepositoryOwnerPersonalRequest()
-	response, err := p.tcrClient.DescribeRepositoryOwnerPersonal(requestROP)
-	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		logs.Logger.Errorf("An API error has returned: %s", err)
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	for _, r := range response.Response.Data.RepoInfo {
-		namespace := ""
-		name := *r.RepoName
-		resultArr := strings.Split(name, "/")
-		if len(resultArr) != 0 {
-			namespace = resultArr[0]
+	var offset, limit int64
+	offset = 0
+	limit = 10
+	requestROP.Offset = tea.Int64(offset)
+	requestROP.Limit = tea.Int64(limit)
+	for {
+		response, err := p.tcrClient.DescribeRepositoryOwnerPersonal(requestROP)
+		if err != nil {
+			return nil, err
 		}
-		NamespaceList = append(NamespaceList, cloud.Namespace{Name: namespace})
+		for _, r := range response.Response.Data.RepoInfo {
+			namespace := ""
+			name := *r.RepoName
+			resultArr := strings.Split(name, "/")
+			if len(resultArr) != 0 {
+				namespace = resultArr[0]
+			}
+			NamespaceList = append(NamespaceList, cloud.Namespace{Name: namespace})
+		}
+		if len(NamespaceList) >= int(tea.Int64Value(response.Response.Data.TotalCount)) {
+			break
+		}
+		offset += limit
+		requestROP.Offset = tea.Int64(offset)
 	}
-	//request := tcr.NewDescribeNamespacePersonalRequest()
-	//request.Namespace = &namespace
-	//request.Offset, request.Limit = SizeNumConvert(0, 10)
-	//response, err := p.tcrClient.DescribeNamespacePersonal(request)
-	//if _, ok := err.(*errors.TencentCloudSDKError); ok {
-	//	logs.Logger.Errorf("An API error has returned: %s", err)
-	//	return NamespaceList, err
-	//}
-	//if err != nil {
-	//	return NamespaceList, err
-	//}
-	//for _, n := range response.Response.Data.NamespaceInfo {
-	//	namespace := cloud.Namespace{Name: *n.Namespace}
-	//	NamespaceList = append(NamespaceList, namespace)
-	//}
 
 	return NamespaceList, nil
 }
@@ -156,6 +150,7 @@ func (p *TencentCloud) EnterpriseRepositoryList(region, instanceId, namespace st
 	request := tcr.NewDescribeRepositoriesRequest()
 	var RepositoryList []cloud.Repository
 	request.RegistryId = common.StringPtr(instanceId)
+	request.NamespaceName = common.StringPtr(namespace)
 	request.Offset, request.Limit = SizeNumConvert(pageNumber, pageSize)
 
 	response, err := p.tcrClient.DescribeRepositories(request)
@@ -177,10 +172,11 @@ func (p *TencentCloud) EnterpriseRepositoryList(region, instanceId, namespace st
 }
 
 func (p *TencentCloud) PersonalRepositoryList(region, namespace string, pageNumber, pageSize int) ([]cloud.Repository, int, error) {
-	request := tcr.NewDescribeRepositoryOwnerPersonalRequest()
+	request := tcr.NewDescribeRepositoryFilterPersonalRequest()
+	request.Namespace = common.StringPtr(namespace)
 	request.Offset, request.Limit = SizeNumConvert(pageNumber, pageSize)
 	var RepositoryList []cloud.Repository
-	response, err := p.tcrClient.DescribeRepositoryOwnerPersonal(request)
+	response, err := p.tcrClient.DescribeRepositoryFilterPersonal(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		logs.Logger.Errorf("An API error has returned: %s", err)
 		return RepositoryList, 0, err
@@ -189,8 +185,13 @@ func (p *TencentCloud) PersonalRepositoryList(region, namespace string, pageNumb
 		return RepositoryList, 0, err
 	}
 	for _, r := range response.Response.Data.RepoInfo {
+		temp := strings.Split(*r.RepoName, "/")
+		var repoName string
+		if len(temp) >= 2 {
+			repoName = temp[len(temp)-1]
+		}
 		repository := cloud.Repository{
-			Name: *r.RepoName,
+			Name: repoName,
 			ID:   "",
 		}
 		RepositoryList = append(RepositoryList, repository)
