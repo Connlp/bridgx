@@ -3,6 +3,8 @@ package aws
 import (
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/elbv2"
+
 	"github.com/galaxy-future/BridgX/internal/logs"
 	"github.com/galaxy-future/BridgX/pkg/cloud"
 
@@ -14,6 +16,7 @@ import (
 
 type AWSCloud struct {
 	ec2Client *ec2.EC2
+	elbClient *elbv2.ELBV2
 	sess      *session.Session
 }
 
@@ -28,6 +31,7 @@ func New(ak, sk, regionId string) (*AWSCloud, error) {
 	}
 	return &AWSCloud{
 		ec2Client: ec2.New(sess),
+		elbClient: elbv2.New(sess),
 		sess:      sess,
 	}, nil
 }

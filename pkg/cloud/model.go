@@ -493,3 +493,12 @@ type ImageTag struct {
 	Tag    string `json:"tag"`
 	Status string `json:"status"`
 }
+type Server struct {
+	//阿里云参数
+	Weight string `json:"Weight"`
+	Type   string `json:"Type"` //写死ecs即可
+
+	//统一参数
+	ServerId string `json:"ServerId"`
+	ServerIp string `json:"ServerIp"` //fo example:192.168.0.01:8080
+}

@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/baidubce/bce-sdk-go/services/blb"
+
 	"github.com/baidubce/bce-sdk-go/services/eip"
 	"github.com/galaxy-future/BridgX/pkg/utils"
 
@@ -41,6 +43,7 @@ type BaiduCloud struct {
 	bccClient *bcc.Client
 	eipClient *eip.Client
 	bosClient *bos.Client
+	blbClient *blb.Client
 }
 
 func New(AK, SK, regionId string) (*BaiduCloud, error) {
@@ -67,6 +70,10 @@ func New(AK, SK, regionId string) (*BaiduCloud, error) {
 	if err != nil {
 		return nil, err
 	}
+	blbClient, err := blb.NewClient(AK, SK, fmt.Sprintf("blb%s", ep))
+	if err != nil {
+		return nil, err
+	}
 	return &BaiduCloud{
 		ak:        AK,
 		sk:        SK,
@@ -74,6 +81,7 @@ func New(AK, SK, regionId string) (*BaiduCloud, error) {
 		bccClient: bccClient,
 		eipClient: eipClient,
 		bosClient: bosClient,
+		blbClient: blbClient,
 	}, nil
 }
 

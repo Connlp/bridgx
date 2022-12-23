@@ -53,6 +53,10 @@ type Provider interface {
 	PersonalRepositoryList(region, namespace string, pageNumber, pageSize int) ([]Repository, int, error)
 	EnterpriseImageList(region, instanceId, repoId, namespace, repoName string, pageNumber, pageSize int) ([]DockerArtifact, int, error)
 	PersonalImageList(region, repoNamespace, repoName string, pageNum, pageSize int) ([]DockerArtifact, int, error)
+
+	//load balancer
+	CreateServer(region, loadBalancerId string, servers []Server) error
+	RemoveServer(region, loadBalancerId string, servers []Server) error
 }
 
 type ProviderDriverFunc func(keyId ...string) (Provider, error)

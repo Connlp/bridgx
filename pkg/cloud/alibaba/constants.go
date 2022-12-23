@@ -8,6 +8,7 @@ const (
 	_subOrderNumPerMain    = 3
 	_maxNumEcsPerOperation = 100
 	_pageSize              = 100
+	_batchSize             = 20
 
 	_payByBandwidth = "PayByBandwidth"
 	_payByTraffic   = "PayByTraffic"
